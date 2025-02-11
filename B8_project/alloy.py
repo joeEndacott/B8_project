@@ -133,11 +133,13 @@ class SuperCell:
         Randomly replaces target atoms in a super cell with substitute atoms until a
         specified concentration is reached. The new disordered super cell is returned.
 
-        The lattice constants of the crystal with 100% substitute atom concentration
-        must be specified. For example, if you want to produce a super cell for
-        the alloy In(x)Ga(1-x)As, you should input a GaAs super cell and the lattice
-        constants of InAs. To calculate the lattice constants of In(x)Ga(1-x)As, a
-        linear interpolation between the lattice constants of GaAs and InAs is used.
+        The lattice constants of the ordered crystal with 0% substitution and the
+        ordered crystal with 100% substitution must be specified. For example, if you
+        want to produce a super cell for the alloy In(x)Ga(1-x)As, you should input the
+        lattice constants of GaAs for the `lattice_constants_no_substitution`
+        parameter, and the lattice constants of InAs for the
+        `lattice_constants_full_substitution` parameter. A linear interpolation is then
+        used to estimate the lattice constants of In(x)Ga(1-x)As.
 
         Parameters
         ----------
@@ -170,10 +172,10 @@ class SuperCell:
         side_lengths = super_cell.lattice_constants / lattice_constants_no_substitution
 
         # Calculate the concentration of substitute atoms.
-        actual_concentration = float(num_substitute_atoms) / float(len(atoms))
+        actual_concentration = float(num_substitute_atoms) / float(len(target_atoms))
 
         # Use a linear interpolation to calculate the lattice constants of the
-        # disordered alloy.
+        # disordered super cell.
         lattice_constants = (
             super_cell.lattice_constants
             + actual_concentration
