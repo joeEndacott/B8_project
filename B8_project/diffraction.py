@@ -9,10 +9,12 @@ from datetime import datetime
 from typing import Mapping
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 from B8_project import utils
 from B8_project.crystal import UnitCell, ReciprocalSpace
 from B8_project.form_factor import FormFactorProtocol, NeutronFormFactor, XRayFormFactor
+from B8_project.alloy import SuperCell
 
 
 def _calculate_structure_factors(
@@ -438,8 +440,9 @@ def plot_diffraction_pattern(
     max_deflection_angle: float = 170,
     intensity_cutoff: float = 1e-6,
     peak_width: float = 0.1,
-    y_axis_logarithmic: bool = False,
     line_width: float = 1.0,
+    y_axis_min: float = 0,
+    y_axis_max: float = 1,
     file_path: str = "results/",
 ):
     """
@@ -478,11 +481,10 @@ def plot_diffraction_pattern(
         The width of the intensity peaks. This parameter is only used for plotting. A
         value should be chosen so that all diffraction peaks can be observed. The
         default value is 0.1°.
-    y_axis_logarithmic : bool
-        True -> logarithmic scale is used for relative intensities. False (default) ->
-        linear scale is used for relative intensities.
     line_width : float
         The linewidth of the plot. Default value is 1.
+    y_axis_min, y_axis_max : float
+        The limits of the y axis of the plot.
     file_path : str
         The path to the directory where the plot will be stored. Default value is
         `"results/"`.
@@ -531,10 +533,8 @@ def plot_diffraction_pattern(
     ax.set_xlabel("Deflection angle (°)", fontsize=11)
     ax.set_ylabel("Relative intensity", fontsize=11)
 
-    # Set y-axis scale.
-    if y_axis_logarithmic:
-        ax.set_yscale("log")
-        ax.set_ylim(intensity_cutoff, 1)
+    # Set y-axis limits.
+    ax.set_ylim(y_axis_min, y_axis_max)
 
     # Set title.
     ax.set_title(
@@ -575,9 +575,10 @@ def plot_superimposed_diffraction_patterns(
     intensity_cutoff: float = 1e-6,
     peak_width: float = 0.1,
     variable_wavelength: bool = False,
-    y_axis_logarithmic: bool = False,
     line_width: float = 1.0,
     opacity: float = 0.5,
+    y_axis_min: float = 0,
+    y_axis_max: float = 1,
     file_path: str = "results/",
 ) -> None:
     """
@@ -619,9 +620,6 @@ def plot_superimposed_diffraction_patterns(
         The width of the intensity peaks. This parameter is only used for plotting. A
         value should be chosen so that all diffraction peaks can be observed. The
         default value is 0.1°.
-    y_axis_logarithmic : bool
-        True -> logarithmic scale is used for relative intensities. False (default) ->
-        linear scale is used for relative intensities.
     variable_wavelength : bool
         False (default) -> Each plot uses the same wavelength. True -> the first plot
         uses the wavelength specified when the function is called, and the other plots
@@ -630,6 +628,8 @@ def plot_superimposed_diffraction_patterns(
         The linewidth of each curve. Default value is 1.
     opacity : float
         The opacity of each curve. Default value is 0.5.
+    y_axis_min, y_axis_max : float
+        The limits of the y axis of the plot.
     file_path : str
         The path to the directory where the plot will be stored. Default value is `"results/"`.
 
@@ -728,10 +728,8 @@ def plot_superimposed_diffraction_patterns(
     ax.set_xlabel("Deflection angle (°)", fontsize=11)
     ax.set_ylabel("Relative intensity", fontsize=11)
 
-    # Set y-axis scale.
-    if y_axis_logarithmic:
-        ax.set_yscale("log")
-        ax.set_ylim(intensity_cutoff, 1)
+    # Set y-axis limits.
+    ax.set_ylim(y_axis_min, y_axis_max)
 
     # Add legend.
     plt.legend()
@@ -754,3 +752,133 @@ def plot_superimposed_diffraction_patterns(
 
     # Print the path to the .pdf file.
     print(f"Plot created at {file_path}{filename}.pdf")
+
+
+def plot_disordered_diffraction_pattern_3d(
+    unit_cell_no_substitution: UnitCell,
+    unit_cell_full_substitution: UnitCell,
+    target_atomic_number: int,
+    substitute_atomic_number: int,
+    concentrations: list[float],
+    super_cell_side_lengths: tuple[int, int, int],
+    alloy_name: str,
+    diffraction_type: str,
+    neutron_form_factors: Mapping[int, NeutronFormFactor],
+    x_ray_form_factors: Mapping[int, XRayFormFactor],
+    wavelength: float = 0.1,
+    min_deflection_angle: float = 10,
+    max_deflection_angle: float = 170,
+    intensity_cutoff: float = 1e-6,
+    peak_width: float = 0.1,
+    line_width: float = 1.0,
+    z_axis_min: float = 0,
+    z_axis_max: float = 1,
+    filename: str = "results/disordered_alloy_3D_plot.html",
+):
+    """
+    Plot disordered diffraction pattern 3D
+    ======================================
+
+    TODO: add documentation.
+    """
+    # Error handling
+    if max(concentrations) > 1 or min(concentrations) < 0:
+        raise ValueError("Concentration must be between 0 and 1.")
+
+    # Generate a pure super cell.
+    pure_super_cell = SuperCell.new_super_cell(
+        unit_cell_no_substitution,
+        super_cell_side_lengths,
+        unit_cell_no_substitution.material,
+    )
+
+    # Sort the concentrations from smallest to largest, so that the plot looks sensible.
+    concentrations.sort()
+
+    # Calculate the number of deflection angles using the same method as
+    # diffraction.get_diffraction_pattern().
+    num_deflection_angles = np.round(
+        10 * (max_deflection_angle - min_deflection_angle) / peak_width
+    ).astype(int)
+
+    # Generate an array of deflection angles.
+    deflection_angles = np.linspace(
+        min_deflection_angle, max_deflection_angle, num_deflection_angles
+    )
+
+    # Initialise an array which stores the intensity data.
+    intensity_data = np.zeros(
+        (len(concentrations), num_deflection_angles),
+    )
+
+    for i, conc in enumerate(concentrations):
+        # Name of the alloy is set equal to the concentration, for debugging purposes.
+        alloy_name = f"conc={conc}"
+
+        # Generate a disordered super cell.
+        disordered_super_cell = SuperCell.apply_disorder(
+            pure_super_cell,
+            target_atomic_number,
+            substitute_atomic_number,
+            conc,
+            unit_cell_no_substitution.lattice_constants,
+            unit_cell_full_substitution.lattice_constants,
+            alloy_name,
+        )
+
+        # Get the diffraction pattern for the InGaAs cell.
+        diffraction_pattern = get_diffraction_pattern(
+            disordered_super_cell,
+            diffraction_type,
+            neutron_form_factors,
+            x_ray_form_factors,
+            wavelength,
+            min_deflection_angle,
+            max_deflection_angle,
+            peak_width,
+            intensity_cutoff,
+        )
+
+        intensity_data[i] = diffraction_pattern["intensities"]
+
+        print(f"Computed intensities for x = {conc}")
+
+    # Create the figure.
+    fig = go.Figure()
+
+    # Plot the data as a series of 2D line plots displaced along the z-axis.
+    for i, conc in enumerate(concentrations):
+        fig.add_trace(
+            go.Scatter3d(
+                x=np.full_like(deflection_angles, conc),
+                y=deflection_angles,
+                z=intensity_data[i],
+                mode="lines",
+                line=dict(color="blue"),
+                opacity=0.5,
+                linewidth=line_width,
+            )
+        )
+
+    # Set axis labels.
+    fig.update_layout(
+        scene=dict(
+            xaxis_title="Concentration of substitute atoms",
+            yaxis_title="Deflection angle (°)",
+            zaxis_title="Relative intensity",
+        ),
+        title=f"{diffraction_type} pattern for {alloy_name}",
+        font=dict(size=15),
+    )
+
+    # Update the limits on the z-axis.
+    fig.update_layout(
+        scene=dict(
+            zaxis=dict(
+                range=[z_axis_min, z_axis_max],
+            ),
+        )
+    )
+
+    fig.show()
+    fig.write_html(filename)
