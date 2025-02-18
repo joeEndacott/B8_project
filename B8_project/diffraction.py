@@ -258,7 +258,7 @@ def get_miller_peaks(
         A mapping from atomic numbers to a class which represents an X-ray form
         factor.
     wavelength : float
-        The wavelength of incident particles, given in nanometers (nm).
+        The wavelength of incident particles, given in angstroms (Å).
     min_deflection_angle : float, optional
         The minimum deflection angle to be plotted. Default is 10.
     max_deflection_angle : float, optional
@@ -320,7 +320,7 @@ def get_diffraction_pattern(
     diffraction_type: str,
     neutron_form_factors: Mapping[int, NeutronFormFactor],
     x_ray_form_factors: Mapping[int, XRayFormFactor],
-    wavelength: float = 0.1,
+    wavelength: float = 1,
     min_deflection_angle: float = 10,
     max_deflection_angle: float = 170,
     peak_width: float = 0.1,
@@ -345,7 +345,8 @@ def get_diffraction_pattern(
     x_ray_form_factors : Mapping[int, XRayFormFactor]
         A mapping from atomic numbers to a class which represents an X-ray form factor.
     wavelength : float
-        The wavelength of incident particles, given in nanometers (nm).
+        The wavelength of incident particles, given in angstroms (Å). The default value
+        is 1Å.
     min_deflection_angle, max_deflection_angle : float
         These parameters specify the range of deflection angles to be plotted.
     peak_width : float
@@ -435,7 +436,7 @@ def plot_diffraction_pattern(
     diffraction_type: str,
     neutron_form_factors: Mapping[int, NeutronFormFactor],
     x_ray_form_factors: Mapping[int, XRayFormFactor],
-    wavelength: float = 0.1,
+    wavelength: float = 1,
     min_deflection_angle: float = 10,
     max_deflection_angle: float = 170,
     intensity_cutoff: float = 1e-6,
@@ -471,7 +472,8 @@ def plot_diffraction_pattern(
     x_ray_form_factors : Mapping[int, XRayFormFactor]
         A mapping from atomic numbers to a class which represents an X-ray form factor.
     wavelength : float
-        The wavelength of incident particles, given in nanometers (nm).
+        The wavelength of incident particles, given in angstroms (Å). The default value
+        is 1Å.
     min_deflection_angle, max_deflection_angle : float
         These parameters specify the range of deflection angles to be plotted.
     intensity_cutoff : float
@@ -525,7 +527,7 @@ def plot_diffraction_pattern(
         diffraction_pattern["deflection_angles"],
         diffraction_pattern["intensities"],
         label=f"{unit_cell.material}, {diffraction_type}, "
-        f"λ = {round(wavelength, 4)}nm",
+        f"λ = {round(wavelength, 4)}Å",
         linewidth=line_width,
     )
 
@@ -569,7 +571,7 @@ def plot_superimposed_diffraction_patterns(
     unit_cells_with_diffraction_types: list[tuple[UnitCell, str]],
     neutron_form_factors: Mapping[int, NeutronFormFactor],
     x_ray_form_factors: Mapping[int, XRayFormFactor],
-    wavelength: float = 0.1,
+    wavelength: float = 1,
     min_deflection_angle: float = 10,
     max_deflection_angle: float = 170,
     intensity_cutoff: float = 1e-6,
@@ -608,8 +610,8 @@ def plot_superimposed_diffraction_patterns(
     x_ray_form_factors : Mapping[int, XRayFormFactor]
         A mapping from atomic numbers to a class which represents an X-ray form factor.
     wavelength : float
-        The wavelength of incident particles, given in nanometers (nm). Default value
-        is 0.1nm.
+        The wavelength of incident particles, given in angstroms (Å). Default value
+        is 1Å.
     min_deflection_angle, max_deflection_angle : float
         These parameters specify the range of deflection angles to be plotted. Default
         values are 10°, 170° respectively.
@@ -695,7 +697,7 @@ def plot_superimposed_diffraction_patterns(
                 diffraction_pattern["deflection_angles"],
                 diffraction_pattern["intensities"],
                 label=f"{unit_cell.material}, {diffraction_type}"
-                f"λ = {round(current_wavelength, 4)}nm",
+                f"λ = {round(current_wavelength, 4)}Å",
                 linewidth=line_width,
                 alpha=opacity,
             )
@@ -765,7 +767,7 @@ def plot_disordered_diffraction_pattern_3d(
     diffraction_type: str,
     neutron_form_factors: Mapping[int, NeutronFormFactor],
     x_ray_form_factors: Mapping[int, XRayFormFactor],
-    wavelength: float = 0.1,
+    wavelength: float = 1,
     min_deflection_angle: float = 10,
     max_deflection_angle: float = 170,
     intensity_cutoff: float = 1e-6,
@@ -826,7 +828,7 @@ def plot_disordered_diffraction_pattern_3d(
             alloy_name,
         )
 
-        # Get the diffraction pattern for the InGaAs cell.
+        # Get the diffraction pattern for the super cell.
         diffraction_pattern = get_diffraction_pattern(
             disordered_super_cell,
             diffraction_type,

@@ -31,7 +31,7 @@ class UnitCell:
         The chemical formula of the crystal, e.g. "NaCl".
     lattice_constants : ndarray
         The side lengths (a, b, c) of the unit cell in the (x, y, z) directions
-        respectively, given in nanometers (nm).
+        respectively, given in angstroms (Å).
     atoms : ndarray
         A list of the atoms in the unit cell, represented as a structured NumPy array.
         This array must have fields "atomic_numbers" and "positions".
@@ -146,7 +146,7 @@ class UnitCell:
             lattice type. 1 -> Simple; 2 -> Body centred; 3 -> Face centred; 4 -> Base
             centred.
             - lattice_constants : tuple[float, float, float]. Side lengths of the unit
-            cell in the x, y and z directions respectively in nanometers (nm).
+            cell in the x, y and z directions respectively in angstroms (Å).
         basis : tuple[list[int], list[tuple[float, float, float]]]
             A tuple (atomic_numbers, atomic_positions) that represents the basis.
             - atomic_numbers : list[int]. The atomic number of each atom in the
