@@ -21,7 +21,11 @@ Functions
 from typing import Mapping
 import pandas as pd
 
-from B8_project.form_factor import NeutronFormFactor, XRayFormFactor
+from B8_project.form_factor import (
+    NeutronFormFactor,
+    XRayFormFactor,
+    XRayFormFactorHardShell,
+)
 
 
 def read_basis(
@@ -292,3 +296,52 @@ def read_xray_form_factors(
     # Create a Mapping mapping the atomic numbers to the X-ray form factors.
     length = len(atomic_numbers)
     return {atomic_numbers[i]: xray_form_factors[i] for i in range(length)}
+
+
+def read_atomic_radii(filename: str = "data/atomic_radii.csv"):
+    """
+    Read atomic radii
+    =================
+
+    TODO: add documentation.
+    """
+    try:
+        # Read the CSV file containing the X-ray form factors into a DataFrame.
+        xray_df = pd.read_csv(filename)
+
+        # Expected columns of the CSV file
+        xray_columns = {
+            "atomic_number",
+            "vdw_radius",
+        }
+
+        # Ensure the CSV file contains the required columns.
+        if not xray_columns.issubset(xray_df.columns):
+            raise ValueError(
+                f"The {filename} must contain the following columns: {xray_columns}"
+            )
+
+        # Read the atomic numbers.
+        atomic_numbers = xray_df["atomic_number"].astype(int).tolist()
+
+        # Read the atomic radii.
+        atomic_radii = xray_df["vdw_radius"].astype(float).tolist()
+
+        # Validate that atomic_numbers and xray_form_factors have the same length
+        if not len(atomic_numbers) == len(atomic_radii):
+            raise ValueError(
+                "atomic_numbers and atomic_radii must have the same length"
+            )
+
+        # Make a list of X-ray form factor objects.
+        x_ray_form_factors = [
+            XRayFormFactorHardShell(atomic_number, atomic_radius)
+            for atomic_number, atomic_radius in zip(atomic_numbers, atomic_radii)
+        ]
+
+    except (ValueError, KeyError, IndexError) as exc:
+        raise ValueError(f"Error processing '{filename}': {exc}") from exc
+
+    # Create a Mapping mapping the atomic numbers to the X-ray form factors.
+    length = len(atomic_numbers)
+    return {atomic_numbers[i]: x_ray_form_factors[i] for i in range(length)}

@@ -157,3 +157,47 @@ class XRayFormFactor:
         form_factors += c
 
         return form_factors
+
+
+@dataclass
+class XRayFormFactorHardShell:
+    """
+    X-ray form factor hard shell
+    ============================
+
+    A class to represent the X-ray form factor of an atom, using a hard shell
+    approximation.
+
+    If we approximate the electron density of an atom as a sphere of uniform charge
+    density, we can calculate the form factor of an atom from first principles.
+
+    Attributes
+    ----------
+    atomic_number : int
+        The atomic number of the atom.
+    atomic_radius : float
+        The atomic radius of the atom. This value can vary depend on what definition of
+        atomic radius is used.
+
+    Methods
+    -------
+    evaluate_form_factor
+        Evaluates the X-ray form factor of an atom for a range of reciprocal lattice
+        vectors.
+    """
+
+    atomic_number: int
+    atomic_radius: float
+
+    def evaluate_form_factors(
+        self, reciprocal_lattice_vector_magnitudes: np.ndarray
+    ) -> np.ndarray:
+        """
+        Evaluate X-ray form factor
+        ==========================
+
+        Evaluates an X-ray form factor of an atom for a specified range of reciprocal
+        lattice vectors.
+        """
+        x = reciprocal_lattice_vector_magnitudes * self.atomic_radius
+        return 3 * self.atomic_number * (np.sin(x) - x * np.cos(x)) * np.pow(x, -3)
