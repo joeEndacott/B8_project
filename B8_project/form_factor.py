@@ -154,7 +154,7 @@ class XRayFormFactor:
             form_factors += a[i] * np.exp(
                 -b[i] * (reciprocal_lattice_vector_magnitudes / (4 * np.pi)) ** 2
             )
-        form_factors += c
+        form_factors += c * np.ones(len(form_factors))
 
         return form_factors
 

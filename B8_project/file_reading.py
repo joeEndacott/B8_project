@@ -298,10 +298,10 @@ def read_xray_form_factors(
     return {atomic_numbers[i]: xray_form_factors[i] for i in range(length)}
 
 
-def read_atomic_radii(filename: str = "data/atomic_radii.csv"):
+def read_x_ray_form_factors_hard_shell(filename: str = "data/atomic_radii.csv"):
     """
-    Read atomic radii
-    =================
+    Read X-ray form factors hard shell
+    ==================================
 
     TODO: add documentation.
     """
