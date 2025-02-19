@@ -1,6 +1,6 @@
 # pylint: disable=invalid-name
 """
-This script calculates the XRD pattern for the disordered alloy In(x)Ga(1-x)As for a 
+This script calculates the ND pattern for the disordered alloy In(x)Ga(1-x)As for a 
 range of different concentrations (x), and represents the data as a surface plot.
 """
 
@@ -10,22 +10,22 @@ import plotly.graph_objects as go
 from B8_project import file_reading, crystal, alloy, diffraction
 
 # Concentration parameters
-NUMBER_OF_CONCENTRATIONS = 21
+NUMBER_OF_CONCENTRATIONS = 2
 MIN_CONCENTRATION = 0
-MAX_CONCENTRATION = 0.1
+MAX_CONCENTRATION = 1
 
 # Diffraction parameters.
-WAVELENGTH = 0.1
-MIN_DEFLECTION_ANGLE = 28.5
-MAX_DEFLECTION_ANGLE = 29.2
+WAVELENGTH = 1
+MIN_DEFLECTION_ANGLE = 20
+MAX_DEFLECTION_ANGLE = 90
 INTENSITY_CUTOFF = 0
 
 # Plot parameters.
-FILENAME = "results/InGaAs/InGaAs_3D_plot_3.html"
-PEAK_WIDTH = 0.0025
+FILENAME = "results/InGaAs/InGaAs_3D_plot_4.html"
+PEAK_WIDTH = 0.1
 Z_AXIS_LOGARITHMIC = False
 Z_AXIS_MIN = 0
-Z_AXIS_MAX = 1e-3
+Z_AXIS_MAX = 1
 
 # Read GaAs parameters from .csv files.
 GaAs_basis = file_reading.read_basis("data/GaAs_basis.csv")
@@ -33,7 +33,7 @@ GaAs_lattice = file_reading.read_lattice("data/GaAs_lattice.csv")
 GaAs_unit_cell = crystal.UnitCell.new_unit_cell(GaAs_basis, GaAs_lattice)
 
 # Generate a pure GaAs super cell.
-GaAs_super_cell = alloy.SuperCell.new_super_cell(GaAs_unit_cell, (10, 10, 10))
+GaAs_super_cell = alloy.SuperCell.new_super_cell(GaAs_unit_cell, (4, 4, 4))
 
 # Read InAs parameters from .csv files.
 InAs_basis = file_reading.read_basis("data/InAs_basis.csv")
@@ -83,7 +83,7 @@ for i, conc in enumerate(concentrations):
     # Get the diffraction pattern for the InGaAs cell.
     diffraction_pattern = diffraction.get_diffraction_pattern(
         unit_cell=disordered_GaAs_super_cell,
-        diffraction_type="XRD",
+        diffraction_type="ND",
         neutron_form_factors=neutron_form_factors,
         x_ray_form_factors=x_ray_form_factors,
         wavelength=WAVELENGTH,
@@ -120,38 +120,18 @@ fig.update_layout(
         yaxis_title="Deflection angle (°)",
         zaxis_title="Relative intensity",
     ),
-    title="XRD pattern for InGaAs",
+    title="ND pattern for InGaAs",
     font=dict(size=15),
 )
 
-if Z_AXIS_LOGARITHMIC:
-    # Adjust ticks and labels.
-    z_ticks = np.logspace(
-        np.log10(Z_AXIS_MIN), 0, num=int(np.ceil(np.abs(np.log10(Z_AXIS_MIN)))) + 1
+# Update the limits on the z-axis.
+fig.update_layout(
+    scene=dict(
+        zaxis=dict(
+            range=[Z_AXIS_MIN, Z_AXIS_MAX],
+        ),
     )
-    z_tick_labels = [f"{10**int(np.log10(t))}" for t in z_ticks]
-
-    # Make the plot logarithmic
-    fig.update_layout(
-        scene=dict(
-            zaxis=dict(
-                type="log",
-                range=[np.log10(Z_AXIS_MIN), np.log10(Z_AXIS_MAX)],
-                tickvals=z_ticks,
-                ticktext=z_tick_labels,
-            ),
-        )
-    )
-
-else:
-    # Update the limits on the z-axis.
-    fig.update_layout(
-        scene=dict(
-            zaxis=dict(
-                range=[Z_AXIS_MIN, Z_AXIS_MAX],
-            ),
-        )
-    )
+)
 
 fig.show()
-fig.write_html(FILENAME)
+# fig.write_html(FILENAME)

@@ -24,7 +24,7 @@ GaAs_unit_cell = crystal.UnitCell.new_unit_cell(GaAs_basis, GaAs_lattice)
 InAs_unit_cell = crystal.UnitCell.new_unit_cell(InAs_basis, InAs_lattice)
 
 # Specify the GaAs diffraction parameters.
-WAVELENGTH = 0.1541838
+WAVELENGTH = 1.541838
 MIN_DEFLECTION_ANGLE = 27
 MAX_DEFLECTION_ANGLE = 84
 INTENSITY_CUTOFF = 0.001
@@ -54,7 +54,7 @@ diffraction.plot_diffraction_pattern(
 )
 
 # Specify the InAs diffraction parameters.
-WAVELENGTH = 0.1541838
+WAVELENGTH = 1.541838
 MIN_DEFLECTION_ANGLE = 25
 MAX_DEFLECTION_ANGLE = 84
 INTENSITY_CUTOFF = 0.001
