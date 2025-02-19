@@ -177,6 +177,18 @@ def _merge_peaks(
     normalized. Finally, any peaks which have an intensity smaller than the intensity
     cutoff are removed.
     """
+    # Normalize the intensities.
+    max_intensity = diffraction_peaks["intensities"].max()
+    diffraction_peaks["intensities"] /= max_intensity
+
+    # Remove any intensities below a threshold.
+    # This threshold should be set to remove any intensities which should be zero, but
+    # are small due to floating point errors.
+    intensity_floating_point_threshold = 1e-10
+    diffraction_peaks = diffraction_peaks[
+        diffraction_peaks["intensities"] >= intensity_floating_point_threshold
+    ]
+
     # Relative tolerance for comparing deflection angles.
     angle_tolerance = 1e-10
 
