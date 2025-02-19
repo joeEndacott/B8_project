@@ -284,6 +284,7 @@ def get_miller_peaks(
         the peak.
         - 'deflection_angle': The deflection angle of the peak.
         - 'intensities': The (normalized) intensity of the peak.
+        - 'multiplicities': The multiplicity of the peak.
     """
     if diffraction_type == "ND":
         diffraction_peaks = _calculate_diffraction_peaks(
@@ -313,6 +314,7 @@ def get_miller_peaks(
                 f"Peak {i+1}: "
                 f"[h k l] = {peak[0]}; deflection angle = {np.round(peak[1], 2)}°; "
                 f"relative intensity = {round(peak[2], 4)}"
+                f"multiplicity = {peak[3]}"
             )
 
     if save_to_csv is True:
