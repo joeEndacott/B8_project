@@ -91,6 +91,7 @@ def _calculate_diffraction_peaks(
         peak.
         - 'deflection_angle': Float equal to the deflection angle of the peak.
         - 'intensities': Float equal to the (normalized) intensity of the peak.
+        - 'multiplicities': Int equal to the multiplicity value of a peak.
     """
     # Error handling.
     if not (min_deflection_angle >= 0 and max_deflection_angle > 0):
@@ -146,6 +147,7 @@ def _calculate_diffraction_peaks(
             ("miller_indices", "3i4"),
             ("deflection_angles", "f8"),
             ("intensities", "f8"),
+            ("multiplicities", "i4"),
         ]
     )
 
@@ -154,6 +156,7 @@ def _calculate_diffraction_peaks(
     diffraction_peaks["miller_indices"] = reciprocal_lattice_vectors["miller_indices"]
     diffraction_peaks["deflection_angles"] = deflection_angles
     diffraction_peaks["intensities"] = relative_intensities
+    diffraction_peaks["multiplicities"] = np.ones(len(relative_intensities))
 
     # Remove duplicate angles and sum the intensities of duplicate peaks.
     diffraction_peaks = _merge_peaks(diffraction_peaks, intensity_cutoff)
@@ -196,6 +199,9 @@ def _merge_peaks(
         ):
             # Merge intensities.
             diffraction_peaks["intensities"][i] += diffraction_peaks["intensities"][j]
+
+            # Update multiplicity values.
+            diffraction_peaks["multiplicities"][i] += 1
 
             # Mark peak as a duplicate.
             mask[j] = False
